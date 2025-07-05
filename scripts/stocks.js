@@ -12,7 +12,7 @@ import {
   doc,
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { fetchPrices, updateExchangeRateUI, exchangeRate } from "./utils.js";
+import { fetchPrices, exchangeRate } from "./utils.js";
 import { checkAuthState } from "./auth.js"; // ✅ 새로 만든 함수 import
 checkAuthState(loadStocks);
 const spinner = document.getElementById("loading-spinner");
@@ -123,7 +123,6 @@ async function loadStocks(user) {
 
       tbody.appendChild(row);
     }
-    await updateExchangeRateUI();
   } catch (error) {
     console.error("데이터 로딩 중 에러 발생:", error);
     alert("데이터를 불러오는 데 실패했습니다. 다시 시도해 주세요.");
@@ -133,9 +132,6 @@ async function loadStocks(user) {
 }
 
 document.getElementById("save-all").addEventListener("click", async () => {
-  const user = auth.currentUser;
-  if (!user) return alert("로그인이 필요합니다.");
-
   const rows = document.querySelectorAll("#stock-table tbody tr");
 
   for (const row of rows) {
@@ -195,10 +191,14 @@ async function handleDelete(id) {
   const user = auth.currentUser;
   if (!user) return;
 
+  // ✅ confirm을 먼저 물어보고, '아니오'를 누르면 함수를 중단시키는 것이 더 효율적입니다.
+  if (!confirm("정말 삭제하시겠습니까?")) return;
+
   const docRef = doc(db, "users", user.uid, "stocks", id);
   await deleteDoc(docRef);
-  if (!confirm("정말 삭제하시겠습니까?")) return;
-  loadStocks(); // 다시 불러오기
+
+  // ✅ loadStocks를 호출할 때 user 객체를 넘겨줍니다.
+  loadStocks(user); // 다시 불러오기
 }
 document.getElementById("add-row").addEventListener("click", () => {
   const tbody = document.querySelector("#stock-table tbody");

@@ -70,7 +70,6 @@ button {
 .sidebar a:hover {
   color: #1abc9c;
 }
-
 .content {
   flex-grow: 1;
   padding: 2rem;

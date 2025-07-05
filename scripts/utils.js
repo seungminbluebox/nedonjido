@@ -28,11 +28,3 @@ export async function fetchPrices(symbolsArray) {
     return {};
   }
 }
-
-export async function updateExchangeRateUI() {
-  if (exchangeRate) {
-    document.getElementById(
-      "exchange-rate"
-    ).textContent = `💲1 USD = ${exchangeRate.toLocaleString()} KRW`;
-  }
-}

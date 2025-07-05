@@ -6,27 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>📈 종목 실적</title>
     <link rel="stylesheet" href="../style.css" />
+    <script type="module" src="/scripts/layout.js"></script>
     <script type="module" src="../scripts/stocks.js"></script>
-    <script type="module" src="../main.js"></script>
   </head>
   <body>
     <div class="container">
-      <!-- 좌측 사이드바 -->
-      <nav class="sidebar">
-        <h2>📊 메뉴</h2>
-        <ul>
-          <li id="exchange-rate">💱 환율: 불러오는 중...</li>
-          <li><a href="../index.html">홈</a></li>
-          <li><a href="stocks.html">종목 실적</a></li>
-          <li><a href="accounts.html">계좌 실적</a></li>
-          <li><a href="total-assets.html">계좌 총액</a></li>
-          <li><a href="deposits.html">입출금</a></li>
-          <li><a href="dividends.html">배당</a></li>
-          <li><a href="categories.html">카테고리</a></li>
-          <li><a href="charts.html">시각화</a></li>
-          <li id="logout-btn" style="cursor: pointer">🔒 로그아웃</li>
-        </ul>
-      </nav>
+      <div id="sidebar-placeholder"></div>
 
       <!-- 본문 영역 -->
       <main class="content">
