@@ -13,110 +13,139 @@ import {
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { fetchPrices, updateExchangeRateUI, exchangeRate } from "./utils.js";
+const spinner = document.getElementById("loading-spinner");
 // 로그인 되어 있다면 바로 불러오기
 auth.onAuthStateChanged((user) => {
-  if (user) loadStocks();
+  if (user) {
+    loadStocks();
+  } else {
+    // ✅ 로그아웃 상태일 때 테이블 비우고 스피너 숨기기
+    const tbody = document.querySelector("#stock-table tbody");
+    tbody.innerHTML = "";
+    spinner.style.display = "none";
+  }
 });
+
+// scripts/stocks.js
+
+// ... 다른 코드는 그대로 ...
 
 async function loadStocks() {
   const user = auth.currentUser;
   if (!user) return;
 
-  const ref = collection(db, "users", user.uid, "stocks");
-  const q = query(ref, orderBy("createdAt"));
-  const snapshot = await getDocs(q);
+  // ✅ 1. 데이터 로딩 시작 -> 스피너 보이기
+  spinner.style.display = "block";
   const tbody = document.querySelector("#stock-table tbody");
-  tbody.innerHTML = "";
+  tbody.innerHTML = ""; // 기존 테이블 내용 비우기
 
-  const stockData = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+  try {
+    // ✅ 2. 에러 처리를 위해 try 블록으로 감싸기
+    const ref = collection(db, "users", user.uid, "stocks");
+    const q = query(ref, orderBy("createdAt"));
+    const snapshot = await getDocs(q);
+    const tbody = document.querySelector("#stock-table tbody");
+    tbody.innerHTML = "";
 
-  const tickers = stockData.map((s) => s.ticker);
-  const prices = await fetchPrices(tickers); // ✅ 핵심: 한 번에 가져오기
+    const stockData = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-  for (const data of stockData) {
-    const row = document.createElement("tr");
+    const tickers = stockData.map((s) => s.ticker);
+    const prices = await fetchPrices(tickers);
 
-    // 🔹 입력 필드: ticker, name, quantity, avgPrice
-    ["ticker", "name", "quantity", "avgPrice"].forEach((key) => {
-      const cell = document.createElement("td");
-      const input = document.createElement("input");
-      let value = data[key];
-      if (key === "ticker") {
-        value = value.replace(/\.KS$/i, "").replace(/\.KQ$/i, "");
-      }
-      input.value = value;
-      input.type = key === "quantity" || key === "avgPrice" ? "number" : "text";
-      input.step = "any";
-      input.dataset.id = data.id;
-      input.dataset.key = key;
+    for (const data of stockData) {
+      const row = document.createElement("tr");
 
-      cell.appendChild(input);
-      row.appendChild(cell);
-    });
+      // 🔹 입력 필드: ticker, name, quantity, avgPrice
+      ["ticker", "name", "quantity", "avgPrice"].forEach((key) => {
+        const cell = document.createElement("td");
+        const input = document.createElement("input");
+        let value = data[key];
+        if (key === "ticker") {
+          value = value.replace(/\.KS$/i, "").replace(/\.KQ$/i, "");
+        }
+        input.value = value;
+        input.type =
+          key === "quantity" || key === "avgPrice" ? "number" : "text";
+        input.step = "any";
+        input.dataset.id = data.id;
+        input.dataset.key = key;
 
-    // 🔹 통화 드롭다운
-    const currencyCell = document.createElement("td");
-    const select = document.createElement("select");
-    ["KRW", "USD"].forEach((cur) => {
-      const opt = document.createElement("option");
-      opt.value = cur;
-      opt.textContent = cur;
-      if (cur === data.currency) opt.selected = true;
-      select.appendChild(opt);
-    });
-    select.dataset.id = data.id;
-    select.dataset.key = "currency";
-    currencyCell.appendChild(select);
-    row.appendChild(currencyCell);
+        cell.appendChild(input);
+        row.appendChild(cell);
+      });
 
-    // 🔹 현재가 / 평가액 / 수익률
-    const currentPriceCell = document.createElement("td");
-    const evalCell = document.createElement("td");
-    const profitCell = document.createElement("td");
+      // 🔹 통화 드롭다운
+      const currencyCell = document.createElement("td");
+      const select = document.createElement("select");
+      ["KRW", "USD"].forEach((cur) => {
+        const opt = document.createElement("option");
+        opt.value = cur;
+        opt.textContent = cur;
+        if (cur === data.currency) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.dataset.id = data.id;
+      select.dataset.key = "currency";
+      currencyCell.appendChild(select);
+      row.appendChild(currencyCell);
 
-    const currentPrice = prices[data.ticker.toUpperCase()];
-    const quantity = parseFloat(data.quantity);
-    const avgPrice = parseFloat(data.avgPrice);
+      // 🔹 현재가 / 평가액 / 수익률
+      const currentPriceCell = document.createElement("td");
+      const evalCell = document.createElement("td");
+      const profitCell = document.createElement("td");
 
-    if (currentPrice && quantity && avgPrice) {
-      const evalPrice = quantity * currentPrice;
-      const rate = ((currentPrice - avgPrice) / avgPrice) * 100;
+      const currentPrice = prices[data.ticker.toUpperCase()];
+      const quantity = parseFloat(data.quantity);
+      const avgPrice = parseFloat(data.avgPrice);
 
-      if (data.currency === "USD") {
-        currentPriceCell.textContent = currentPrice.toFixed(2).toLocaleString();
-        evalCell.textContent = `$${Math.round(
-          evalPrice.toFixed(2)
-        )} → ${Math.round(evalPrice * exchangeRate).toLocaleString()}원`;
+      if (currentPrice && quantity && avgPrice) {
+        const evalPrice = quantity * currentPrice;
+        const rate = ((currentPrice - avgPrice) / avgPrice) * 100;
+
+        if (data.currency === "USD") {
+          currentPriceCell.textContent = currentPrice
+            .toFixed(2)
+            .toLocaleString();
+          evalCell.textContent = `$${Math.round(
+            evalPrice.toFixed(2)
+          )} → ${Math.round(evalPrice * exchangeRate).toLocaleString()}원`;
+        } else {
+          currentPriceCell.textContent = currentPrice.toLocaleString();
+          evalCell.textContent = `${evalPrice.toLocaleString()}원`;
+        }
+        profitCell.textContent = rate.toFixed(2) + "%";
       } else {
-        currentPriceCell.textContent = currentPrice.toLocaleString();
-        evalCell.textContent = `${evalPrice.toLocaleString()}원`;
+        currentPriceCell.textContent = "-";
+        evalCell.textContent = "-";
+        profitCell.textContent = "-";
       }
-      profitCell.textContent = rate.toFixed(2) + "%";
-    } else {
-      currentPriceCell.textContent = "-";
-      evalCell.textContent = "-";
-      profitCell.textContent = "-";
+
+      row.appendChild(currentPriceCell);
+      row.appendChild(evalCell);
+      row.appendChild(profitCell);
+
+      // 🔹 삭제 버튼
+      const delCell = document.createElement("td");
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "🗑️";
+      delBtn.onclick = () => handleDelete(data.id);
+      delCell.appendChild(delBtn);
+      row.appendChild(delCell);
+
+      tbody.appendChild(row);
     }
-
-    row.appendChild(currentPriceCell);
-    row.appendChild(evalCell);
-    row.appendChild(profitCell);
-
-    // 🔹 삭제 버튼
-    const delCell = document.createElement("td");
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "🗑️";
-    delBtn.onclick = () => handleDelete(data.id);
-    delCell.appendChild(delBtn);
-    row.appendChild(delCell);
-
-    tbody.appendChild(row);
+    await updateExchangeRateUI();
+  } catch (error) {
+    console.error("데이터 로딩 중 에러 발생:", error);
+    alert("데이터를 불러오는 데 실패했습니다. 다시 시도해 주세요.");
+  } finally {
+    spinner.style.display = "none";
   }
-  await updateExchangeRateUI();
 }
+
 document.getElementById("save-all").addEventListener("click", async () => {
   const user = auth.currentUser;
   if (!user) return alert("로그인이 필요합니다.");

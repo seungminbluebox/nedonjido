@@ -49,8 +49,14 @@ button {
 .sidebar ul {
   list-style: none;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 90%; /* 부모 높이에 맞춰 늘리기 */
 }
-
+#logout-btn {
+  /* ✅ 이 코드를 추가하여 버튼을 맨 아래로 보냅니다. */
+  margin-top: auto;
+}
 .sidebar li {
   margin-bottom: 1rem;
 }
@@ -144,4 +150,41 @@ table td {
 #add-row:hover {
   background: #659bf1;
   color: #fff0f0 !important;
+}
+/* style.css 파일에 추가 */
+
+/* 로딩 스피너 스타일 */
+.spinner-container {
+  display: none; /* 평소에는 숨겨둠 */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.spinner {
+  border: 8px solid #f3f3f3; /* Light grey */
+  border-top: 8px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-container p {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  font-weight: bold;
 }
