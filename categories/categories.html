@@ -1,1 +1,115 @@
 <!-- categories/categories.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>⚙️ 카테고리 관리</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      /* 카테고리 페이지 전용 스타일 */
+      .category-section {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+      .category-section h2 {
+        margin-top: 0;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 0.5rem;
+      }
+      .category-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 1rem;
+      }
+      .category-item {
+        background-color: #e9ecef;
+        padding: 8px 12px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+      }
+      .delete-cat-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin-left: 8px;
+        font-size: 1rem;
+        color: #888;
+      }
+      .add-category-form {
+        display: flex;
+        gap: 10px;
+      }
+      .add-category-form input {
+        flex-grow: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="sidebar-placeholder"></div>
+
+      <main class="content">
+        <h1>⚙️ 카테고리 관리</h1>
+        <p>자주 사용하는 항목들을 미리 등록하고 관리할 수 있습니다.</p>
+
+        <section class="category-section">
+          <h2>증권사</h2>
+          <div id="securities-list" class="category-list"></div>
+          <form id="add-securities-form" class="add-category-form">
+            <input
+              type="text"
+              placeholder="증권사 이름 (예: 키움증권)"
+              required
+            />
+            <button type="submit">추가</button>
+          </form>
+        </section>
+
+        <section class="category-section">
+          <h2>계좌 종류</h2>
+          <div id="account-types-list" class="category-list"></div>
+          <form id="add-account-type-form" class="add-category-form">
+            <input
+              type="text"
+              placeholder="계좌 종류 (예: 국내주식, 해외주식, ISA)"
+              required
+            />
+            <button type="submit">추가</button>
+          </form>
+        </section>
+        <section class="category-section">
+          <h2>종목 관리</h2>
+          <div id="stocks-list" class="category-list"></div>
+          <form id="add-stock-form" class="add-category-form">
+            <input
+              type="text"
+              id="new-stock-name"
+              placeholder="종목명 (예: 삼성전자)"
+              required
+            />
+            <input
+              type="text"
+              id="new-stock-ticker"
+              placeholder="티커 (예: 005930)"
+              required
+            />
+            <button type="submit">추가</button>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="../scripts/layout.js"></script>
+    <script type="module" src="../scripts/categories.js"></script>
+  </body>
+</html>

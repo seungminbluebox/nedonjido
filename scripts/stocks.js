@@ -1,20 +1,32 @@
 //  scripts/stocks.js
 import { auth, db } from "../firebase-config.js";
-import {
-  query,
-  orderBy,
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// ✅ getDoc을 추가로 import 합니다.
 import {
   collection,
-  addDoc,
+  query,
+  orderBy,
   getDocs,
+  addDoc,
   updateDoc,
   doc,
   deleteDoc,
+  getDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { fetchPrices, exchangeRate } from "./utils.js";
-import { checkAuthState } from "./auth.js"; // ✅ 새로 만든 함수 import
-checkAuthState(loadStocks);
+import { checkAuthState } from "./auth.js";
+
+let userStocks = []; // ✅ 종목 카테고리 데이터를 저장할 변수
+let currentUser = null; // ✅ 현재 사용자 정보를 담을 전역 변수
+
+checkAuthState(async (user) => {
+  currentUser = user; // ✅ 로그인 시 전역 변수에 사용자 정보 저장
+  const catDocRef = doc(db, "users", user.uid, "categories", "user_categories");
+  const docSnap = await getDoc(catDocRef);
+  if (docSnap.exists()) {
+    userStocks = docSnap.data().stocks || [];
+  }
+  loadStocks(user);
+});
 const spinner = document.getElementById("loading-spinner");
 
 async function loadStocks(user) {
@@ -30,8 +42,6 @@ async function loadStocks(user) {
     const ref = collection(db, "users", user.uid, "stocks");
     const q = query(ref, orderBy("createdAt"));
     const snapshot = await getDocs(q);
-    const tbody = document.querySelector("#stock-table tbody");
-    tbody.innerHTML = "";
 
     const stockData = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -39,6 +49,13 @@ async function loadStocks(user) {
     }));
 
     const tickers = stockData.map((s) => s.ticker);
+
+    // ✅ 요청할 티커가 없을 경우, API를 호출하지 않고 함수를 종료합니다.
+    if (tickers.length === 0) {
+      spinner.style.display = "none"; // 스피너 숨기는 것을 잊지 마세요.
+      return;
+    }
+
     const prices = await fetchPrices(tickers);
 
     for (const data of stockData) {
@@ -132,9 +149,15 @@ async function loadStocks(user) {
 }
 
 document.getElementById("save-all").addEventListener("click", async () => {
+  // ✅ 전역 변수인 currentUser를 사용합니다.
+  if (!currentUser)
+    return alert("사용자 정보가 없습니다. 다시 로그인해주세요.");
+  let isAllSaved = true; // ✅ 모든 저장이 성공했는지 확인하는 '깃발'
+
   const rows = document.querySelectorAll("#stock-table tbody tr");
 
   for (const row of rows) {
+    // ... (for 루프 안의 코드는 그대로)
     const inputs = row.querySelectorAll("input, select");
     const updateData = {};
     let id = null;
@@ -166,56 +189,110 @@ document.getElementById("save-all").addEventListener("click", async () => {
       !updateData.currency
     ) {
       alert("❗ 모든 항목을 입력해주세요.");
-      continue;
+      isAllSaved = false; // ❌ 깃발을 '실패'로 변경
+      continue; // 현재 행의 입력이 불완전하면 다음 행으로 넘어갑니다.
     }
 
-    const ref = collection(db, "users", user.uid, "stocks");
+    // ✅ 여기서도 currentUser.uid를 사용합니다.
+    const ref = collection(db, "users", currentUser.uid, "stocks");
 
-    if (row.dataset.isNew === "true") {
-      await addDoc(ref, {
-        ...updateData,
-        createdAt: new Date(),
-      });
-    } else if (id) {
-      const docRef = doc(ref, id);
-      await updateDoc(docRef, updateData);
+    try {
+      if (row.dataset.isNew === "true") {
+        await addDoc(ref, { ...updateData, createdAt: new Date() });
+      } else if (id) {
+        const docRef = doc(ref, id);
+        await updateDoc(docRef, updateData);
+      }
+    } catch (error) {
+      console.error("저장 중 오류 발생:", error);
+      alert("데이터 저장에 실패했습니다.");
+      isAllSaved = false; // ❌ 데이터베이스 오류 시에도 '실패'로 변경
     }
   }
 
-  alert("✅ 모든 변경사항이 저장되었습니다!");
-  loadStocks(); // 최신 반영
+  if (isAllSaved) {
+    alert("✅ 모든 변경사항이 저장되었습니다!");
+    loadStocks(currentUser);
+  }
 });
 
 // 삭제 핸들러
 async function handleDelete(id) {
-  const user = auth.currentUser;
-  if (!user) return;
+  if (!currentUser) return;
 
-  // ✅ confirm을 먼저 물어보고, '아니오'를 누르면 함수를 중단시키는 것이 더 효율적입니다.
   if (!confirm("정말 삭제하시겠습니까?")) return;
 
-  const docRef = doc(db, "users", user.uid, "stocks", id);
+  const docRef = doc(db, "users", currentUser.uid, "stocks", id);
   await deleteDoc(docRef);
 
-  // ✅ loadStocks를 호출할 때 user 객체를 넘겨줍니다.
-  loadStocks(user); // 다시 불러오기
+  loadStocks(currentUser);
 }
+
 document.getElementById("add-row").addEventListener("click", () => {
   const tbody = document.querySelector("#stock-table tbody");
   const row = document.createElement("tr");
+  row.dataset.isNew = "true";
 
-  const inputs = {};
-  ["ticker", "name", "quantity", "avgPrice"].forEach((key) => {
-    const cell = document.createElement("td");
-    const input = document.createElement("input");
-    input.placeholder = key;
-    input.type = key === "quantity" || key === "avgPrice" ? "number" : "text";
-    input.step = "any";
-    input.dataset.key = key; // ✅ 추가
-    cell.appendChild(input);
-    row.appendChild(cell);
-    inputs[key] = input;
+  // 티커, 수량, 평단가 셀 (기존 input 유지)
+  const tickerCell = document.createElement("td");
+  const tickerInput = document.createElement("input");
+  tickerInput.placeholder = "티커";
+  tickerInput.dataset.key = "ticker";
+  tickerCell.appendChild(tickerInput);
+
+  // ✅ 종목명 셀 (드롭다운으로 변경)
+  const nameCell = document.createElement("td");
+  const nameSelect = document.createElement("select");
+  nameSelect.dataset.key = "name";
+
+  // 드롭다운 기본 옵션
+  const defaultOption = document.createElement("option");
+  defaultOption.textContent = "종목 선택";
+  defaultOption.value = "";
+  nameSelect.appendChild(defaultOption);
+
+  // 카테고리에서 불러온 종목들로 옵션 채우기
+  userStocks.forEach((stock) => {
+    const option = document.createElement("option");
+    option.textContent = stock.name;
+    option.value = stock.name; // 값은 종목명
+    // data-* 속성에 티커 정보를 숨겨둡니다.
+    option.dataset.ticker = stock.ticker;
+    nameSelect.appendChild(option);
   });
+  nameCell.appendChild(nameSelect);
+
+  // ✅ 종목명 선택 시 티커 자동 입력
+  nameSelect.addEventListener("change", (e) => {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const ticker = selectedOption.dataset.ticker || "";
+    // 같은 행(row)에 있는 티커 input을 찾아서 값을 채워줍니다.
+    row.querySelector('input[data-key="ticker"]').value = ticker;
+  });
+
+  const quantityCell = document.createElement("td");
+  const quantityInput = document.createElement("input");
+  quantityInput.type = "number";
+  quantityInput.placeholder = "수량";
+  quantityInput.dataset.key = "quantity";
+  quantityCell.appendChild(quantityInput);
+
+  const avgPriceCell = document.createElement("td");
+  const avgPriceInput = document.createElement("input");
+  avgPriceInput.type = "number";
+  avgPriceInput.step = "any";
+  avgPriceInput.placeholder = "평단가";
+  avgPriceInput.dataset.key = "avgPrice";
+  avgPriceCell.appendChild(avgPriceInput);
+
+  // 생성된 셀들을 행에 추가
+  row.appendChild(tickerCell);
+
+  row.appendChild(nameCell); // 종목명 드롭다운
+  row.appendChild(quantityCell);
+  row.appendChild(avgPriceCell);
+
+  // ... (통화, 현재가, 평가액, 수익률, 삭제 버튼 셀 생성 로직은 기존과 유사하게 추가)
 
   // 통화 드롭다운
   const currencyCell = document.createElement("td");
@@ -223,26 +300,17 @@ document.getElementById("add-row").addEventListener("click", () => {
   ["", "KRW", "USD"].forEach((opt) => {
     const option = document.createElement("option");
     option.value = opt;
-    option.textContent = opt || "통화 선택";
+    option.textContent = opt || "통화";
     select.appendChild(option);
   });
-  select.dataset.key = "currency"; // ✅ 여기에 반드시 추가
+  select.dataset.key = "currency";
   currencyCell.appendChild(select);
   row.appendChild(currencyCell);
 
-  // 현재가, 평가액, 수익률 빈 칸
-  const currentCell = document.createElement("td");
-  const evalCell = document.createElement("td");
-  const profitCell = document.createElement("td");
-
-  currentCell.textContent = "-";
-  evalCell.textContent = "-";
-  profitCell.textContent = "-";
-
-  row.appendChild(currentCell);
-  row.appendChild(evalCell);
-  row.appendChild(profitCell);
-  row.dataset.isNew = "true"; // 새로 추가된 줄 표시
+  // 빈 셀들
+  for (let i = 0; i < 4; i++) {
+    row.insertCell();
+  }
 
   tbody.appendChild(row);
 });
