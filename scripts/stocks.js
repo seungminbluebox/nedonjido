@@ -13,25 +13,11 @@ import {
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { fetchPrices, updateExchangeRateUI, exchangeRate } from "./utils.js";
+import { checkAuthState } from "./auth.js"; // ✅ 새로 만든 함수 import
+checkAuthState(loadStocks);
 const spinner = document.getElementById("loading-spinner");
-// 로그인 되어 있다면 바로 불러오기
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    loadStocks();
-  } else {
-    // ✅ 로그아웃 상태일 때 테이블 비우고 스피너 숨기기
-    const tbody = document.querySelector("#stock-table tbody");
-    tbody.innerHTML = "";
-    spinner.style.display = "none";
-  }
-});
 
-// scripts/stocks.js
-
-// ... 다른 코드는 그대로 ...
-
-async function loadStocks() {
-  const user = auth.currentUser;
+async function loadStocks(user) {
   if (!user) return;
 
   // ✅ 1. 데이터 로딩 시작 -> 스피너 보이기

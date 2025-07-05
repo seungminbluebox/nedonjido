@@ -2,22 +2,11 @@
 import { auth, provider, db } from "./firebase-config.js";
 import { signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { checkAuthState } from "./scripts/auth.js"; // ✅ 새로 만든 함수 import
 
-const loginButton = document.getElementById("login-btn");
-if (loginButton) {
-  loginButton.addEventListener("click", async () => {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const userInfoElement = document.getElementById("user-info");
-      if (userInfoElement) {
-        userInfoElement.innerText = `✅ 로그인됨: ${user.displayName}`;
-      }
-    } catch (error) {
-      console.error("로그인 실패", error);
-    }
-  });
-}
+// ✅ 로그인 상태 확인
+checkAuthState();
+
 // ✅ 로그아웃 버튼 이벤트 리스너 (새로 추가)
 const logoutButton = document.getElementById("logout-btn");
 if (logoutButton) {
