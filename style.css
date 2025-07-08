@@ -89,17 +89,17 @@ button {
   width: 100px;
 }
 
-#stock-table input {
+#stock-table input,
+#stock-table select {
   width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* 테두리까지 높이에 포함 */
   border: none;
-  text-align: center;
   background: transparent;
-  font-size: 1.2rem;
-}
-
-#stock-table input:focus {
-  outline: 1px solid #1abc9c;
-  background: #e8f8f5;
+  text-align: center;
+  font-family: inherit;
+  font-size: 1.2rem; /* ✅ input과 동일한 폰트 크기로 통일 */
+  padding: 0; /* ✅ 내부 패딩을 0으로 설정해 꽉 채움 */
 }
 
 #stock-table button {
@@ -186,4 +186,9 @@ table td {
   font-size: 1.2rem;
   color: #2c3e50;
   font-weight: bold;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
