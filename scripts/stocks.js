@@ -280,9 +280,10 @@ document.getElementById("save-all").addEventListener("click", async () => {
       const allValues = Object.values(updateData).filter(
         (v) => v !== "" && v !== 0 && !isNaN(v)
       );
-      if (allValues.length > 0) {
+      if (allValues.length >= 0) {
         alert("❗ 모든 항목을 입력해주세요.");
         isAllSaved = false;
+        break;
       }
       continue;
     }

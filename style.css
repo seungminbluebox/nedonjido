@@ -87,6 +87,7 @@ button {
   text-align: center;
   font-size: 1.2rem;
   width: 100px;
+  height: 45px; /* ✅ 이 한 줄을 추가해주세요. */
 }
 
 #stock-table input,

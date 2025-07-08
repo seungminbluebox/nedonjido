@@ -1,1 +1,50 @@
 <!-- categories/deposits.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💰 입출금 내역</title>
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div id="sidebar-placeholder"></div>
+
+      <main class="content">
+        <h1>💰 입출금 내역</h1>
+
+        <div id="loading-spinner" class="spinner-container">
+          <div class="spinner"></div>
+          <p>데이터를 불러오는 중입니다...</p>
+        </div>
+
+        <div id="deposit-list">
+          <table id="stock-table">
+            <thead>
+              <tr>
+                <th>날짜</th>
+                <th>증권사</th>
+                <th>계좌 종류</th>
+                <th>금액 (원)</th>
+                <th>비고</th>
+                <th>삭제</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <h2 style="cursor: pointer; color: #2c3e50" id="add-row">
+          ➕ 새 내역 추가
+        </h2>
+        <button id="save-all" style="margin-top: 10px">
+          💾 변경사항 저장하기
+        </button>
+      </main>
+    </div>
+
+    <script type="module" src="../scripts/layout.js"></script>
+    <script type="module" src="../scripts/deposits.js"></script>
+  </body>
+</html>
