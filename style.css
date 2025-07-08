@@ -193,3 +193,46 @@ input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+/* 입출금 요약 섹션 스타일 */
+.summary-section {
+  display: flex;
+  justify-content: space-around;
+  background-color: #f5f6fa;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.summary-item {
+  text-align: center;
+}
+
+.summary-item h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.summary-item p {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* 총 입금액은 파란색, 출금액은 빨간색으로 강조 */
+#total-deposit {
+  color: #dc3545;
+}
+
+#total-withdrawal {
+  color: #007bff;
+}
+/* 총 손익 색상 스타일 */
+#total-profit-loss.positive {
+  color: #dc3545; /* 빨간색 */
+}
+
+#total-profit-loss.negative {
+  color: #007bff; /* 파란색 */
+}

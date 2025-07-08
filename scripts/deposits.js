@@ -39,24 +39,52 @@ async function loadDeposits(user) {
   const tbody = document.querySelector("#stock-table tbody");
   tbody.innerHTML = "";
 
+  // ✅ 요약 섹션의 p 태그들을 가져옵니다.
+  const totalDepositEl = document.getElementById("total-deposit");
+  const totalWithdrawalEl = document.getElementById("total-withdrawal");
+  const netTotalEl = document.getElementById("net-total");
+
   try {
     const ref = collection(db, "users", user.uid, "deposits");
-
-    // ✅ 정렬 기준을 'date' 필드의 오름차순('asc')으로 변경합니다.
-    // 만약 날짜가 같다면, 먼저 생성된(createdAt) 항목이 위로 오도록 2차 정렬을 추가하여 안정성을 높입니다.
     const q = query(ref, orderBy("date", "asc"), orderBy("createdAt", "asc"));
-
     const snapshot = await getDocs(q);
 
-    // ❌ 데이터베이스에서 직접 정렬하므로, JS에서의 추가 정렬 코드는 삭제합니다.
+    const depositsData = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-    snapshot.docs.forEach((doc) => {
-      const data = { id: doc.id, ...doc.data() };
-      const row = createDepositRow(data);
+    // ✅ 총액 계산 로직을 추가합니다.
+    let totalDeposit = 0;
+    let totalWithdrawal = 0;
+
+    depositsData.forEach((deposit) => {
+      // 금액(amount)이 0보다 크면 입금, 작으면 출금으로 간주합니다.
+      if (deposit.amount > 0) {
+        totalDeposit += deposit.amount;
+      } else {
+        // 출금액은 음수이므로, -1을 곱해 양수로 만들어 더합니다.
+        totalWithdrawal += deposit.amount * -1;
+      }
+
+      // 테이블 행을 만드는 코드는 그대로 유지합니다.
+      const row = createDepositRow(deposit);
       tbody.appendChild(row);
     });
+
+    // 순수 입출금 총계를 계산합니다.
+    const netTotal = totalDeposit - totalWithdrawal;
+
+    // ✅ 계산된 금액을 화면에 알아보기 쉽게 쉼표를 넣어 표시합니다.
+    totalDepositEl.textContent = `${totalDeposit.toLocaleString()} 원`;
+    totalWithdrawalEl.textContent = `${totalWithdrawal.toLocaleString()} 원`;
+    netTotalEl.textContent = `${netTotal.toLocaleString()} 원`;
   } catch (error) {
     console.error("입출금 내역 로딩 실패:", error);
+    // 에러 발생 시 요약 금액을 '오류'로 표시합니다.
+    totalDepositEl.textContent = "오류";
+    totalWithdrawalEl.textContent = "오류";
+    netTotalEl.textContent = "오류";
   } finally {
     spinner.style.display = "none";
   }

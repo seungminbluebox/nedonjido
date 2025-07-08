@@ -12,10 +12,22 @@
   <body>
     <div class="container">
       <div id="sidebar-placeholder"></div>
-
-      <!-- 본문 영역 -->
       <main class="content">
         <h1>📋 종목 실적</h1>
+        <section class="summary-section">
+          <div class="summary-item">
+            <h2>총 매수액</h2>
+            <p id="total-purchase">0 원</p>
+          </div>
+          <div class="summary-item">
+            <h2>총 평가액</h2>
+            <p id="total-evaluation">0 원</p>
+          </div>
+          <div class="summary-item">
+            <h2>총 손익 (수익률)</h2>
+            <p id="total-profit-loss">0 원 (0.00%)</p>
+          </div>
+        </section>
         <div id="loading-spinner" class="spinner-container">
           <div class="spinner"></div>
           <p>데이터를 불러오는 중입니다...</p>

@@ -58,6 +58,11 @@ async function loadStocks(user) {
   const tbody = document.querySelector("#stock-table tbody");
   tbody.innerHTML = "";
 
+  // ✅ 1. 요약 정보를 표시할 HTML 요소들을 가져옵니다. (기존 코드)
+  const totalPurchaseEl = document.getElementById("total-purchase");
+  const totalEvaluationEl = document.getElementById("total-evaluation");
+  const totalProfitLossEl = document.getElementById("total-profit-loss");
+
   try {
     const ref = collection(db, "users", user.uid, "stocks");
     const q = query(ref, orderBy("createdAt"));
@@ -67,22 +72,29 @@ async function loadStocks(user) {
       ...doc.data(),
     }));
 
+    // ... (데이터가 없을 때의 처리 코드는 그대로)
     if (stockData.length === 0) {
+      totalPurchaseEl.textContent = "0 원";
+      totalEvaluationEl.textContent = "0 원";
+      totalProfitLossEl.textContent = "0 원 (0.00%)";
+      // ✅ 색상 클래스도 초기화합니다.
+      totalProfitLossEl.classList.remove("positive", "negative");
       spinner.style.display = "none";
       return;
     }
-    const tickers = stockData.map((s) => s.ticker);
-    const prices = await fetchPrices(tickers);
+
+    const tickers = stockData.map((s) => s.ticker).filter((t) => t);
+    const prices = tickers.length > 0 ? await fetchPrices(tickers) : {};
+
+    let totalPurchaseAmount = 0;
+    let totalEvaluationAmount = 0;
 
     for (const data of stockData) {
+      // ... (for 루프 안의 행 생성 및 계산 코드는 기존과 동일합니다.)
       const row = document.createElement("tr");
-
-      // ✅ 기존 데이터 렌더링 로직 수정
       ["ticker", "name", "quantity", "avgPrice"].forEach((key) => {
         const cell = document.createElement("td");
-
         if (key === "name") {
-          // 'name'일 경우, input 대신 드롭다운을 생성합니다.
           const nameSelect = createStockNameDropdown(data.name);
           nameSelect.dataset.id = data.id;
           nameSelect.addEventListener("change", (e) => {
@@ -92,7 +104,6 @@ async function loadStocks(user) {
           });
           cell.appendChild(nameSelect);
         } else {
-          // 다른 필드는 기존처럼 input을 생성합니다.
           const input = document.createElement("input");
           let value = data[key];
           if (key === "ticker" && value) {
@@ -100,7 +111,7 @@ async function loadStocks(user) {
           }
           if (key === "ticker") {
             input.readOnly = true;
-            input.classList.add("readonly-input"); // 스타일링을 위한 클래스 추가
+            input.classList.add("readonly-input");
           }
           input.value = value;
           input.type =
@@ -112,8 +123,6 @@ async function loadStocks(user) {
         }
         row.appendChild(cell);
       });
-
-      // ... (통화, 현재가, 수익률 등 나머지 부분은 기존 코드와 동일하게 유지)
       const currencyCell = document.createElement("td");
       const select = document.createElement("select");
       ["KRW", "USD"].forEach((cur) => {
@@ -127,7 +136,6 @@ async function loadStocks(user) {
       select.dataset.key = "currency";
       currencyCell.appendChild(select);
       row.appendChild(currencyCell);
-
       const currentPriceCell = document.createElement("td");
       const evalCell = document.createElement("td");
       const profitCell = document.createElement("td");
@@ -164,15 +172,57 @@ async function loadStocks(user) {
       delCell.appendChild(delBtn);
       row.appendChild(delCell);
 
+      let purchaseAmountKRW = (quantity || 0) * (avgPrice || 0);
+      let evaluationAmountKRW = (quantity || 0) * (currentPrice || 0);
+
+      if (data.currency === "USD" && exchangeRate) {
+        purchaseAmountKRW *= exchangeRate;
+        evaluationAmountKRW *= exchangeRate;
+      }
+
+      totalPurchaseAmount += purchaseAmountKRW;
+      if (currentPrice) {
+        totalEvaluationAmount += evaluationAmountKRW;
+      }
+
       tbody.appendChild(row);
     }
+
+    // ✅ 5. 최종 계산된 값을 화면에 표시하고, 색상을 변경하는 로직을 추가합니다.
+    const totalProfitLoss = totalEvaluationAmount - totalPurchaseAmount;
+    const totalProfitRate =
+      totalPurchaseAmount === 0
+        ? 0
+        : (totalProfitLoss / totalPurchaseAmount) * 100;
+
+    totalPurchaseEl.textContent = `${Math.round(
+      totalPurchaseAmount
+    ).toLocaleString()} 원`;
+    totalEvaluationEl.textContent = `${Math.round(
+      totalEvaluationAmount
+    ).toLocaleString()} 원`;
+    totalProfitLossEl.textContent = `${Math.round(
+      totalProfitLoss
+    ).toLocaleString()} 원 (${totalProfitRate.toFixed(2)}%)`;
+
+    // --- 여기에 색상 변경 로직 추가 ---
+    totalProfitLossEl.classList.remove("positive", "negative"); // 먼저 기존 색상 클래스 초기화
+
+    if (totalProfitLoss > 0) {
+      totalProfitLossEl.classList.add("positive"); // 손익이 +면 'positive' 클래스 추가
+    } else if (totalProfitLoss < 0) {
+      totalProfitLossEl.classList.add("negative"); // 손익이 -면 'negative' 클래스 추가
+    }
+    // ------------------------------------
   } catch (error) {
     console.error("데이터 로딩 중 에러 발생:", error);
+    totalPurchaseEl.textContent = "오류";
+    totalEvaluationEl.textContent = "오류";
+    totalProfitLossEl.textContent = "오류";
   } finally {
     spinner.style.display = "none";
   }
 }
-
 // ✅ '종목 추가' 함수도 새 헬퍼 함수를 사용하도록 수정
 document.getElementById("add-row").addEventListener("click", () => {
   const tbody = document.querySelector("#stock-table tbody");
