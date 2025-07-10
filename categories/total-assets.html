@@ -1,1 +1,88 @@
-<!-- categories/total-assets.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📊 계좌 총액</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      /* 계좌 총액 페이지 전용 스타일 (기존과 동일) */
+      .info-box {
+        background-color: #f8f9fa;
+        border-left: 4px solid #17a2b8;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+      }
+      #stock-table .asset-input,
+      #stock-table .month-input {
+        width: 130px;
+        text-align: right;
+        padding: 6px 8px;
+      }
+      #stock-table .month-input {
+        text-align: center;
+      }
+      #stock-table .profit-positive {
+        color: #dc3545;
+      }
+      #stock-table .profit-negative {
+        color: #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="sidebar-placeholder"></div>
+
+      <main class="content">
+        <h1>📊 계좌 총액</h1>
+        <div class="info-box">
+          <p>
+            '새로운 월 추가' 버튼으로 원하는 년/월을 추가하고, 매월 말일의 총
+            자산을 입력하세요.<br />
+            입력된 자산과 입출금 내역을 바탕으로 월별/누적 실적이 자동
+            계산됩니다.
+          </p>
+        </div>
+
+        <div
+          id="loading-spinner"
+          class="spinner-container"
+          style="display: none"
+        >
+          <div class="spinner"></div>
+          <p>데이터를 불러오는 중입니다...</p>
+        </div>
+
+        <div id="total-assets-list">
+          <table id="stock-table">
+            <thead>
+              <tr>
+                <th>년/월</th>
+                <th>월말 총자산</th>
+                <th>월간 입출금</th>
+                <th>월간 손익</th>
+                <th>월간 수익률</th>
+                <th>누적 입금액</th>
+                <th>누적 손익</th>
+                <th>누적 수익률</th>
+                <th>삭제</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <h2 style="cursor: pointer; color: #2c3e50" id="add-row">
+          ➕ 새 내역 추가
+        </h2>
+        <button id="save-all" style="margin-top: 10px">
+          💾 변경사항 저장하기
+        </button>
+      </main>
+    </div>
+
+    <script type="module" src="../scripts/layout.js"></script>
+    <script type="module" src="../scripts/total-assets.js"></script>
+  </body>
+</html>
