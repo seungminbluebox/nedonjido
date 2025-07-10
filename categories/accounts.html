@@ -1,1 +1,100 @@
-<!-- categories/accounts.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📈 계좌 실적</title>
+    <link rel="stylesheet" href="../style.css" />
+    <style>
+      /* 계좌 카드 스타일 */
+      .account-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+      }
+      .account-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+      .account-card-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .account-card-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+      .account-card-body .account-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.8rem;
+        font-size: 1rem;
+      }
+      .account-row .label {
+        color: #555;
+      }
+      .account-row .value {
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+      .account-row .value input {
+        width: 140px;
+        text-align: right;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-size: 1rem;
+      }
+      hr {
+        border: none;
+        border-top: 1px solid #f0f0f0;
+        margin: 1rem 0;
+      }
+      .profit-positive {
+        color: #dc3545;
+      }
+      .profit-negative {
+        color: #007bff;
+      }
+      #save-all {
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="sidebar-placeholder"></div>
+
+      <main class="content">
+        <h1>📈 계좌 실적</h1>
+        <p>
+          각 계좌의 현재 총 자산을 입력하면, 입출금 내역을 바탕으로 실적을 자동
+          계산합니다.
+        </p>
+        <p>
+          <strong>계좌 추가 방법</strong> 카테고리에서 증권, 계좌를 추가한 후
+          입출금 카테고리에서 해당 계좌의 기록을 추가해주세요.
+        </p>
+
+        <div
+          id="loading-spinner"
+          class="spinner-container"
+          style="display: none"
+        >
+          <div class="spinner"></div>
+          <p>데이터를 불러오는 중입니다...</p>
+        </div>
+
+        <div id="account-list" class="account-grid"></div>
+        <button id="save-all">💾 변경사항 저장하기</button>
+      </main>
+    </div>
+
+    <script type="module" src="../scripts/layout.js"></script>
+    <script type="module" src="../scripts/accounts.js"></script>
+  </body>
+</html>

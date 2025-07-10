@@ -236,3 +236,19 @@ input[type="number"]::-webkit-inner-spin-button {
 #total-profit-loss.negative {
   color: #007bff; /* 파란색 */
 }
+/* USD 배당금 원화 환산 표시 스타일 */
+#total-usd-dividends #usd-to-krw-conversion {
+  font-size: 1.1rem; /* 다른 금액과 크기를 맞춤 */
+  font-weight: normal;
+  color: #6c757d; /* 회색 계열 */
+  margin-left: 0.5rem;
+}
+
+#total-usd-dividends #usd-to-krw-conversion::before {
+  content: "≈"; /* "약" 기호 */
+  margin-right: 4px;
+}
+
+#total-usd-dividends #usd-to-krw-conversion::after {
+  content: "";
+}

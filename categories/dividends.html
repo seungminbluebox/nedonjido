@@ -1,1 +1,67 @@
 <!-- categories/dividends.html -->
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💵 배당 내역</title>
+    <link rel="stylesheet" href="../style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div id="sidebar-placeholder"></div>
+
+      <main class="content">
+        <h1>💵 배당 내역</h1>
+
+        <section class="summary-section">
+          <div class="summary-item">
+            <h2>누적 배당금 (KRW)</h2>
+            <p id="total-krw-dividends">0 원</p>
+          </div>
+          <div class="summary-item">
+            <h2>누적 배당금 (USD)</h2>
+            <p id="total-usd-dividends">
+              <span id="usd-amount">$ 0.00</span>
+              <span id="usd-to-krw-conversion">(0 원)</span>
+            </p>
+          </div>
+          <div class="summary-item">
+            <h2>총 누적 배당금 (원화 환산)</h2>
+            <p id="total-dividends">0 원</p>
+          </div>
+        </section>
+
+        <div id="loading-spinner" class="spinner-container">
+          <div class="spinner"></div>
+          <p>데이터를 불러오는 중입니다...</p>
+        </div>
+
+        <div id="dividend-list">
+          <table id="stock-table">
+            <thead>
+              <tr>
+                <th>배당일</th>
+                <th>종목명</th>
+                <th>배당금액</th>
+                <th>통화</th>
+                <th>삭제</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <h2 style="cursor: pointer; color: #2c3e50" id="add-row">
+          ➕ 새 내역 추가
+        </h2>
+        <button id="save-all" style="margin-top: 10px">
+          💾 변경사항 저장하기
+        </button>
+      </main>
+    </div>
+
+    <script type="module" src="../scripts/layout.js"></script>
+    <script type="module" src="../scripts/dividends.js"></script>
+  </body>
+</html>
