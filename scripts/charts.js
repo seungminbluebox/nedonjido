@@ -12,7 +12,9 @@ let accountTrendChart,
   portfolioRatioChart,
   monthlyDividendsChart,
   yearlyAverageDividendsChart;
-
+const isMobile = window.innerWidth <= 768; // 화면 너비가 768px 이하면 모바일로 간주
+const currentFontSize = isMobile ? 12 : 16; // 모바일은 12px, 데스크탑은 16px
+const tooltipFontSize = isMobile ? 11 : 14; // 툴팁은 조금 더 작게
 checkAuthState(loadAllChartData);
 
 async function loadAllChartData(user) {
@@ -147,7 +149,17 @@ function processDataForYearlyAverageDividends(dividends) {
   const data = sortedYears.map((year) => yearlyDividends[year] / 12);
   return { labels, data };
 }
-
+function formatYAxisLabel(value) {
+  if (Math.abs(value) >= 100000000) {
+    // 억 단위
+    return (value / 100000000).toFixed(1).replace(/\.0$/, "") + "억";
+  }
+  if (Math.abs(value) >= 10000) {
+    // 만 단위
+    return (value / 10000).toFixed(0) + "만";
+  }
+  return value.toLocaleString();
+}
 // --- 차트 렌더링 함수들 ---
 function renderAccountTrendChart(chartData) {
   /* 기존과 동일 */
@@ -181,17 +193,23 @@ function renderAccountTrendChart(chartData) {
       scales: {
         y: {
           ticks: {
-            callback: (value) => value.toLocaleString() + " 원",
-            font: { size: 25 }, // ✅ y축 눈금 폰트 크기
+            callback: (value) => formatYAxisLabel(value) + " 원",
+            font: { size: currentFontSize }, // ✅ y축 눈금 폰트 크기
           },
         },
-        x: { ticks: { font: { size: 25 } } }, // ✅ x축 눈금 폰트 크기
+        x: { ticks: { font: { size: currentFontSize } } }, // ✅ x축 눈금 폰트 크기
       },
       plugins: {
-        legend: { labels: { font: { size: 14 } } },
+        legend: { labels: { font: { size: currentFontSize } } },
         tooltip: {
-          titleFont: { size: 25 }, // 툴팁 제목 폰트
-          bodyFont: { size: 25 }, // 툴팁 본문 폰트
+          callbacks: {
+            label: function (tooltipItem) {
+              const value = Math.floor(tooltipItem.raw).toLocaleString();
+              return `${tooltipItem.label}: ${value} 원`;
+            },
+          },
+          titleFont: { size: tooltipFontSize }, // 툴팁 제목 폰트
+          bodyFont: { size: tooltipFontSize }, // 툴팁 본문 폰트
         },
       },
     },
@@ -228,11 +246,17 @@ function renderPortfolioRatioChart(chartData) {
       plugins: {
         legend: {
           position: "top",
-          labels: { font: { size: 25 } }, // ✅ 범례 폰트 크기
+          labels: { font: { size: currentFontSize } }, // ✅ 범례 폰트 크기
         },
         tooltip: {
-          titleFont: { size: 25 }, // 툴팁 제목 폰트
-          bodyFont: { size: 25 }, // 툴팁 본문 폰트
+          callbacks: {
+            label: function (tooltipItem) {
+              const value = Math.floor(tooltipItem.raw).toLocaleString();
+              return `${tooltipItem.label}: ${value} 원`;
+            },
+          },
+          titleFont: { size: tooltipFontSize }, // 툴팁 제목 폰트
+          bodyFont: { size: tooltipFontSize }, // 툴팁 본문 폰트
         },
       },
     },
@@ -262,17 +286,23 @@ function renderMonthlyDividendsChart(chartData) {
         y: {
           beginAtZero: true,
           ticks: {
-            callback: (value) => value.toLocaleString() + " 원",
-            font: { size: 25 }, // ✅ y축 눈금 폰트 크기
+            callback: (value) => formatYAxisLabel(value) + " 원",
+            font: { size: currentFontSize }, // ✅ y축 눈금 폰트 크기
           },
         },
-        x: { ticks: { font: { size: 25 } } }, // ✅ x축 눈금 폰트 크기
+        x: { ticks: { font: { size: currentFontSize } } }, // ✅ x축 눈금 폰트 크기
       },
       plugins: {
-        legend: { labels: { font: { size: 25 } } }, // ✅ 범례 폰트 크기
+        legend: { labels: { font: { size: currentFontSize } } }, // ✅ 범례 폰트 크기
         tooltip: {
-          titleFont: { size: 25 }, // 툴팁 제목 폰트
-          bodyFont: { size: 25 }, // 툴팁 본문 폰트
+          callbacks: {
+            label: function (tooltipItem) {
+              const value = Math.floor(tooltipItem.raw).toLocaleString();
+              return `${tooltipItem.label}: ${value} 원`;
+            },
+          },
+          titleFont: { size: tooltipFontSize }, // 툴팁 제목 폰트
+          bodyFont: { size: tooltipFontSize }, // 툴팁 본문 폰트
         },
       },
     },
@@ -304,17 +334,23 @@ function renderYearlyAverageDividendsChart(chartData) {
         y: {
           beginAtZero: true,
           ticks: {
-            callback: (value) => value.toLocaleString() + " 원",
-            font: { size: 25 }, // ✅ y축 눈금 폰트 크기
+            callback: (value) => formatYAxisLabel(value) + " 원",
+            font: { size: currentFontSize }, // ✅ y축 눈금 폰트 크기
           },
         },
-        x: { ticks: { font: { size: 25 } } }, // ✅ x축 눈금 폰트 크기
+        x: { ticks: { font: { size: currentFontSize } } }, // ✅ x축 눈금 폰트 크기
       },
       plugins: {
-        legend: { labels: { font: { size: 25 } } }, // ✅ 범례 폰트 크기
+        legend: { labels: { font: { size: currentFontSize } } }, // ✅ 범례 폰트 크기
         tooltip: {
-          titleFont: { size: 25 }, // 툴팁 제목 폰트
-          bodyFont: { size: 25 }, // 툴팁 본문 폰트
+          callbacks: {
+            label: function (tooltipItem) {
+              const value = Math.floor(tooltipItem.raw).toLocaleString();
+              return `${tooltipItem.label}: ${value} 원`;
+            },
+          },
+          titleFont: { size: tooltipFontSize }, // 툴팁 제목 폰트
+          bodyFont: { size: tooltipFontSize }, // 툴팁 본문 폰트
         },
       },
     },
