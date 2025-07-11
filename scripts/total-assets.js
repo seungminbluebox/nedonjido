@@ -113,48 +113,97 @@ function calculateAndRender(deposits, savedAssets) {
 function createAssetRow(data) {
   const row = document.createElement("tr");
 
-  const monthlyProfitClass =
+  // 1. 년/월 입력 (input type="month")
+  const monthCell = document.createElement("td");
+  const monthInput = document.createElement("input");
+  monthInput.type = "month";
+  monthInput.className = "month-input";
+  monthInput.value = data.month || "";
+  // 새 행이 아닐 경우, '년/월' 수정을 막습니다.
+  if (!data.isNew) {
+    monthInput.disabled = true;
+  }
+  monthCell.appendChild(monthInput);
+
+  // 2. 월말 총자산 입력 (input type="number")
+  const assetCell = document.createElement("td");
+  const assetInput = document.createElement("input");
+  assetInput.type = "number";
+  assetInput.className = "asset-input";
+  assetInput.value = data.endOfMonthAsset || "";
+  assetInput.placeholder = "월말 총자산";
+  assetCell.appendChild(assetInput);
+
+  // 3. 자동 계산되는 셀들 (읽기 전용)
+  const monthlyDepositCell = document.createElement("td");
+  monthlyDepositCell.textContent = (data.monthlyDeposit || 0).toLocaleString();
+
+  const monthlyProfitCell = document.createElement("td");
+  monthlyProfitCell.className =
     data.monthlyProfit > 0
       ? "profit-positive"
       : data.monthlyProfit < 0
       ? "profit-negative"
       : "";
-  const cumulativeProfitClass =
+  monthlyProfitCell.textContent = Math.round(
+    data.monthlyProfit || 0
+  ).toLocaleString();
+
+  const monthlyRateCell = document.createElement("td");
+  monthlyRateCell.className =
+    data.monthlyProfit > 0
+      ? "profit-positive"
+      : data.monthlyProfit < 0
+      ? "profit-negative"
+      : "";
+  monthlyRateCell.textContent = `${(data.monthlyRate || 0).toFixed(2)}%`;
+
+  const cumulativeDepositCell = document.createElement("td");
+  cumulativeDepositCell.textContent = (
+    data.cumulativeDeposit || 0
+  ).toLocaleString();
+
+  const cumulativeProfitCell = document.createElement("td");
+  cumulativeProfitCell.className =
     data.cumulativeProfit > 0
       ? "profit-positive"
       : data.cumulativeProfit < 0
       ? "profit-negative"
       : "";
-
-  row.innerHTML = `
-        <td><input type="month" class="month-input" value="${data.month}" ${
-    data.isNew ? "" : "disabled"
-  }></td>
-        <td><input type="number" class="asset-input" value="${
-          data.endOfMonthAsset || ""
-        }" placeholder="월말 총자산"></td>
-        <td>${(data.monthlyDeposit || 0).toLocaleString()}</td>
-        <td class="${monthlyProfitClass}">${Math.round(
-    data.monthlyProfit || 0
-  ).toLocaleString()}</td>
-        <td class="${monthlyProfitClass}">${(data.monthlyRate || 0).toFixed(
-    2
-  )}%</td>
-        <td>${(data.cumulativeDeposit || 0).toLocaleString()}</td>
-        <td class="${cumulativeProfitClass}">${Math.round(
+  cumulativeProfitCell.textContent = Math.round(
     data.cumulativeProfit || 0
-  ).toLocaleString()}</td>
-        <td class="${cumulativeProfitClass}">${(
-    data.cumulativeRate || 0
-  ).toFixed(2)}%</td>
-        <td><button class="delete-row-btn">🗑️</button></td>
-    `;
-  // 삭제 버튼에 이벤트 리스너 추가
-  row.querySelector(".delete-row-btn").addEventListener("click", () => {
-    if (confirm(`'${data.month}' 데이터를 삭제하시겠습니까?`)) {
-      row.remove();
-    }
-  });
+  ).toLocaleString();
+
+  const cumulativeRateCell = document.createElement("td");
+  cumulativeRateCell.className =
+    data.cumulativeProfit > 0
+      ? "profit-positive"
+      : data.cumulativeProfit < 0
+      ? "profit-negative"
+      : "";
+  cumulativeRateCell.textContent = `${(data.cumulativeRate || 0).toFixed(2)}%`;
+
+  // 4. 삭제 버튼 (조건부 생성)
+  const deleteCell = document.createElement("td");
+  // ✅ data.isNew가 아닐 때, 즉 기존에 저장된 데이터일 때만 삭제 버튼을 만듭니다.
+  if (!data.isNew) {
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "🗑️";
+    deleteBtn.onclick = () => handleDelete(data.month);
+    deleteCell.appendChild(deleteBtn);
+  }
+
+  // 생성된 모든 셀(td)들을 행(tr)에 추가합니다.
+  row.appendChild(monthCell);
+  row.appendChild(assetCell);
+  row.appendChild(monthlyDepositCell);
+  row.appendChild(monthlyProfitCell);
+  row.appendChild(monthlyRateCell);
+  row.appendChild(cumulativeDepositCell);
+  row.appendChild(cumulativeProfitCell);
+  row.appendChild(cumulativeRateCell);
+  row.appendChild(deleteCell);
+
   return row;
 }
 
@@ -208,3 +257,33 @@ document.getElementById("save-all").addEventListener("click", async () => {
     alert("저장에 실패했습니다.");
   }
 });
+async function handleDelete(monthToDelete) {
+  if (!currentUser || !monthToDelete) return;
+  if (!confirm(`'${monthToDelete}' 데이터를 정말 삭제하시겠습니까?`)) return;
+
+  try {
+    const docRef = doc(
+      db,
+      "users",
+      currentUser.uid,
+      "manualData",
+      "monthlyAssets"
+    );
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const currentAssets = docSnap.data().assets || [];
+      // 삭제할 월을 제외한 나머지 데이터만 남깁니다.
+      const updatedAssets = currentAssets.filter(
+        (asset) => asset.month !== monthToDelete
+      );
+      // 필터링된 새 배열로 문서를 덮어씁니다.
+      await setDoc(docRef, { assets: updatedAssets });
+    }
+    // 성공적으로 삭제 후, 전체 데이터를 다시 불러옵니다.
+    loadInitialData(currentUser);
+  } catch (error) {
+    console.error("삭제 실패:", error);
+    alert("삭제 중 오류가 발생했습니다.");
+  }
+}
