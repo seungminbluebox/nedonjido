@@ -13,8 +13,8 @@ let accountTrendChart,
   monthlyDividendsChart,
   yearlyAverageDividendsChart;
 const isMobile = window.innerWidth <= 768; // 화면 너비가 768px 이하면 모바일로 간주
-const currentFontSize = isMobile ? 12 : 16; // 모바일은 12px, 데스크탑은 16px
-const tooltipFontSize = isMobile ? 11 : 14; // 툴팁은 조금 더 작게
+const currentFontSize = isMobile ? 12 : 25; // 모바일은 12px, 데스크탑은 16px
+const tooltipFontSize = isMobile ? 11 : 25; // 툴팁은 조금 더 작게
 checkAuthState(loadAllChartData);
 
 async function loadAllChartData(user) {
