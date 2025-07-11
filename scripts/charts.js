@@ -177,9 +177,22 @@ function renderAccountTrendChart(chartData) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false, // ✅ 크기 조정을 위해 추가
+      maintainAspectRatio: false,
       scales: {
-        y: { ticks: { callback: (value) => value.toLocaleString() + " 원" } },
+        y: {
+          ticks: {
+            callback: (value) => value.toLocaleString() + " 원",
+            font: { size: 25 }, // ✅ y축 눈금 폰트 크기
+          },
+        },
+        x: { ticks: { font: { size: 25 } } }, // ✅ x축 눈금 폰트 크기
+      },
+      plugins: {
+        legend: { labels: { font: { size: 14 } } },
+        tooltip: {
+          titleFont: { size: 25 }, // 툴팁 제목 폰트
+          bodyFont: { size: 25 }, // 툴팁 본문 폰트
+        },
       },
     },
   });
@@ -211,13 +224,21 @@ function renderPortfolioRatioChart(chartData) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false, // ✅ 크기 조정을 위해 추가
-      plugins: { legend: { position: "top" } },
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "top",
+          labels: { font: { size: 25 } }, // ✅ 범례 폰트 크기
+        },
+        tooltip: {
+          titleFont: { size: 25 }, // 툴팁 제목 폰트
+          bodyFont: { size: 25 }, // 툴팁 본문 폰트
+        },
+      },
     },
   });
 }
 function renderMonthlyDividendsChart(chartData) {
-  /* 기존과 동일 */
   const ctx = document
     .getElementById("monthly-dividends-chart")
     .getContext("2d");
@@ -240,7 +261,18 @@ function renderMonthlyDividendsChart(chartData) {
       scales: {
         y: {
           beginAtZero: true,
-          ticks: { callback: (value) => value.toLocaleString() + " 원" },
+          ticks: {
+            callback: (value) => value.toLocaleString() + " 원",
+            font: { size: 25 }, // ✅ y축 눈금 폰트 크기
+          },
+        },
+        x: { ticks: { font: { size: 25 } } }, // ✅ x축 눈금 폰트 크기
+      },
+      plugins: {
+        legend: { labels: { font: { size: 25 } } }, // ✅ 범례 폰트 크기
+        tooltip: {
+          titleFont: { size: 25 }, // 툴팁 제목 폰트
+          bodyFont: { size: 25 }, // 툴팁 본문 폰트
         },
       },
     },
@@ -267,11 +299,22 @@ function renderYearlyAverageDividendsChart(chartData) {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false, // ✅ 크기 조정을 위해 추가
+      maintainAspectRatio: false,
       scales: {
         y: {
           beginAtZero: true,
-          ticks: { callback: (value) => value.toLocaleString() + " 원" },
+          ticks: {
+            callback: (value) => value.toLocaleString() + " 원",
+            font: { size: 25 }, // ✅ y축 눈금 폰트 크기
+          },
+        },
+        x: { ticks: { font: { size: 25 } } }, // ✅ x축 눈금 폰트 크기
+      },
+      plugins: {
+        legend: { labels: { font: { size: 25 } } }, // ✅ 범례 폰트 크기
+        tooltip: {
+          titleFont: { size: 25 }, // 툴팁 제목 폰트
+          bodyFont: { size: 25 }, // 툴팁 본문 폰트
         },
       },
     },
